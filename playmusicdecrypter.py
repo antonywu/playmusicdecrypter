@@ -25,6 +25,8 @@ import sqlite3
 
 import superadb
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class PlayMusicDecrypter:
     """Decrypt MP3 file from Google Play Music offline storage (All Access)"""
@@ -121,8 +123,8 @@ def pull_database(destination_dir=".", adb="adb"):
     print("Downloading Google Play Music database from device...")
     try:
         adb = superadb.SuperAdb(executable=adb)
-    except RuntimeError:
-        print("  Device is not connected! Exiting...")
+    except RuntimeError as e:
+        print("  {} Exiting...".format(e.message))
         sys.exit(1)
 
     if not os.path.isdir(destination_dir):
@@ -140,8 +142,8 @@ def pull_library(source_dir="/data/data/com.google.android.music/files/music", d
     print("Downloading encrypted MP3 files from device...")
     try:
         adb = superadb.SuperAdb(executable=adb)
-    except RuntimeError:
-        print("  Device is not connected! Exiting...")
+    except RuntimeError as e:
+        print("  {} Exiting...".format(e.message))
         sys.exit(1)
 
     if not os.path.isdir(destination_dir):

@@ -109,11 +109,12 @@ class SuperAdb(object):
             raise RuntimeError("Device is not connected!")
 
         # Setup reverse port forwarding
-        self.start_reverse_forwarding()
+        if self.start_reverse_forwarding():
+            raise RuntimeError("Can't start adb reverse port forwarding!")
 
     def adb(self, *cmd):
         """Call adb command"""
-        return subprocess.call([self.executable] + list(cmd))
+        return subprocess.call([self.executable] + list(cmd), stderr=subprocess.STDOUT, stdout=open(os.devnull, 'w'))
 
     def start_server(self):
         """Start adb server"""
@@ -183,8 +184,8 @@ def main():
 
     try:
         adb = SuperAdb(executable=options.adb)
-    except RuntimeError:
-        print("Device is not connected!")
+    except RuntimeError as e:
+        print("  {} Exiting...".format(e.message))
         sys.exit(1)
 
     cmd = args[0]
