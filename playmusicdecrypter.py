@@ -21,6 +21,7 @@ __version__ = "2.0"
 import os, sys, struct, re, glob, optparse, time
 import Crypto.Cipher.AES, Crypto.Util.Counter
 import mutagen
+from mutagen.mp3 import MP3
 import sqlite3
 
 import superadb
@@ -28,17 +29,23 @@ import superadb
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+
 class PlayMusicDecrypter:
     """Decrypt MP3 file from Google Play Music offline storage (All Access)"""
     def __init__(self, database, infile):
         # Open source file
         self.infile = infile
         self.source = open(infile, "rb")
+        self.is_decrypted = False
 
         # Test if source file is encrypted
         start_bytes = self.source.read(4)
         if start_bytes != "\x12\xd3\x15\x27":
-            raise ValueError("Invalid file format!")
+            try:
+                MP3(self.infile)
+                self.is_decrypted = True
+            except Exception:
+                raise ValueError("Invalid file format!")
 
         # Get file info
         self.database = database
@@ -49,6 +56,8 @@ class PlayMusicDecrypter:
         data = self.source.read(1024)
         if not data:
             return ""
+        if self.is_decrypted:
+            return data
 
         iv = data[:16]
         encrypted = data[16:]
